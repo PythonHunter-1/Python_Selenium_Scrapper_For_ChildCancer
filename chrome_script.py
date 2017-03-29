@@ -1,5 +1,9 @@
 from selenium import webdriver
 import os
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+import selenium.webdriver.support.expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 
 path_to_chromedriver = './chromedriver';
 browser = webdriver.Chrome(executable_path = path_to_chromedriver)
@@ -47,3 +51,11 @@ browser.switch_to_frame('mainFrame')
 dyn_frame = browser.find_element_by_xpath('//frame[contains(@name, "fr_resultsNav")]')
 framename = dyn_frame[0].get_attribute('name')
 browser.switch_to_frame(framename)
+
+path_to_log = '/Users/yourname/Desktop/'
+log_errors = open(path_to_log + 'log_errors.txt', mode = 'w')
+try:
+	# some_object = WebDriverWait(browser, 120).until(EC.element_to_be_located((By.CSS_SELECTOR, 'img[alt=\"Some Button\"]')))
+	some_object = WebDriverWait(browser, 120).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'img[alt=\"Some Button\"]')))
+except TimeoutException:
+	log_errors.write('couldnt locate button XYZ when searching')
