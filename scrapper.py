@@ -8,7 +8,7 @@ from selenium.common.exceptions import TimeoutException, ElementNotVisibleExcept
 
 def init_driver():
 	driver = webdriver.Firefox()
-	driver.wait = WebDriverWait(driver, 5)
+	driver.wait = WebDriverWait(driver, 15)
 	return driver
 
 def get_config():
@@ -32,10 +32,19 @@ def login(driver, user):
 	except TimeoutException:
 		print("Cannot find login elements")
 
+def go_roster(driver):
+	# driver.get("https://cogmembers.org/apps/roster/membersearch.aspx")
+	try:
+		quick_links = driver.wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"ctl00_ctl00_MenuLinks1_COGMegamenu\"]/ul/li[1]/a")))
+		driver.get("https://cogmembers.org/apps/roster/membersearch.aspx")
+	except TimeoutException:
+		print("Cannot find Quick Links")
+
 
 if __name__ == "__main__":
 	driver = init_driver()
 	user = get_config()["user"]
 	login(driver, user)
-	time.sleep(5)
+	go_roster(driver)
+	time.sleep(25)
 	driver.quit()
