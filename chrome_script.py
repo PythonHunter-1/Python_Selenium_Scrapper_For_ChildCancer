@@ -1,5 +1,6 @@
 from selenium import webdriver
 import os
+import random
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 import selenium.webdriver.support.expected_conditions as EC
@@ -54,8 +55,20 @@ browser.switch_to_frame(framename)
 
 path_to_log = '/Users/yourname/Desktop/'
 log_errors = open(path_to_log + 'log_errors.txt', mode = 'w')
+
+seconds = 5 + (random.random() * 5)
+time.sleep(seconds)
+
 try:
 	# some_object = WebDriverWait(browser, 120).until(EC.element_to_be_located((By.CSS_SELECTOR, 'img[alt=\"Some Button\"]')))
 	some_object = WebDriverWait(browser, 120).until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'img[alt=\"Some Button\"]')))
 except TimeoutException:
 	log_errors.write('couldnt locate button XYZ when searching')
+
+dcap = dict(DesiredCapabilities.PHANTOMJS)
+dcap["phantomjs.page.settings.userAgent"] = (
+     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/53 "
+     "(KHTML, like Gecko) Chrome/15.0.87")
+
+path_to_phantomjs = './phantomjs' # change path as needed
+browser = webdriver.PhantomJS(executable_path = path_to_phantomjs, desired_capabilities = dcap)
