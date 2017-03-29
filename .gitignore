@@ -1,2 +1,4 @@
 selenium_env
 geckodriver.log
+config.json
+__pycache__
