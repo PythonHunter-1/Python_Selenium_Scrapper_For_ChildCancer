@@ -88,16 +88,16 @@ def write_to_csv(driver, index, output):
 		print('closing exception handling....')
 		write_to_csv(driver, index)
 
-	time.sleep(5)
+	# time.sleep(5)
 
-	email = driver.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="divToPrint"]/div[2]/table/tbody/tr/td[2]/table[3]/tbody/tr/td/a')))
+	email = driver.wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="divToPrint"]/div[2]/table/tbody/tr/td[2]/table[3]/tbody/tr/td/a')))
 	
 	print(email.text)
 	output.writerow([lastname_text, email.text])
 
 	close = driver.wait.until(EC.element_to_be_clickable((By.ID, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_LinkButton1')))
 	close.click()
-	time.sleep(5)
+	time.sleep(10)
 
 	
 
