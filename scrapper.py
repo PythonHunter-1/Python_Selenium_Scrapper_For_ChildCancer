@@ -6,7 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, ElementNotVisibleException
+from selenium.common.exceptions import TimeoutException, ElementNotVisibleException, WebDriverException
 
 # class csvItem(scrapy.Item):
 # 	last_name = scrapy.Field()
@@ -77,33 +77,68 @@ def view_all(driver):
 	except TimeoutException:
 		print("View All button not found")
 
-def save_to_csv(driver):
+def write_to_csv(driver, index, output):
+	lastname = driver.wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00__{0}"]/td[1]/a'.format(index))))
+	# lastname = row.find_elements(By.TAG_NAME, 'td')[0].find_element(By.TAG_NAME, 'a')
+	lastname_text = lastname.text
+	print(lastname_text)
+	try:
+		lastname.click()
+	except WebDriverException:
+		print('closing exception handling....')
+		time.sleep(5)
+		write_to_csv(driver, index)
+
+	email = driver.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="divToPrint"]/div[2]/table/tbody/tr/td[2]/table[3]/tbody/tr/td/a')))
 	
-	driver.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, "tr")))
-	with open("results.csv", "w") as f:
-		output = csv.writer(f)
-		output.writerow(["last name", "email"])
+	print(email.text)
 
-		tbody = driver.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00"]/tbody')))
-		# rows = tbody.find_elements(By.TAG_NAME, "tr")
-		time.sleep(10)
+	close = driver.find_element(By.ID, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_LinkButton1')
+	close.click()
 
-		# print(tbody.get_attribute('innerHTML'))
-		# soup = BeautifulSoup(tbody.html)
-		rows = tbody.find_elements(By.TAG_NAME, "tr")
-		print("row length:", len(rows))
+	output.writerow([lastname_text, email.text])
+
+def save_to_csv(driver):
+	# try:
+		driver.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, "tr")))
+		with open("results.csv", "w") as f:
+			output = csv.writer(f)
+			output.writerow(["last name", "email"])
+
+			tbody = driver.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00"]/tbody')))
+			# rows = tbody.find_elements(By.TAG_NAME, "tr")
+			time.sleep(10)
+
+			# print(tbody.get_attribute('innerHTML'))
+			# soup = BeautifulSoup(tbody.html)
+			rows = tbody.find_elements(By.TAG_NAME, "tr")
+			print("row length:", len(rows))
 
 
-		for row in rows:
-			lastname = row.find_elements(By.TAG_NAME, 'td')[0].find_element(By.TAG_NAME, 'a').text
-			email = row.find_elements(By.TAG_NAME, 'td')[1].text
+			for index, row in enumerate(rows):
+				write_to_csv(driver, index, output)
+				# lastname = driver.wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00__{0}"]/td[1]/a'.format(index))))
+				# # lastname = row.find_elements(By.TAG_NAME, 'td')[0].find_element(By.TAG_NAME, 'a')
+				# lastname_text = lastname.text
+				# print(lastname_text)
+				# try:
+				# 	lastname.click()
+				# except WebDriverException:
 
-			print(lastname)
-			print(email)
 
-			output.writerow([lastname, email])
+				# email = driver.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="divToPrint"]/div[2]/table/tbody/tr/td[2]/table[3]/tbody/tr/td/a')))
+				
+				# print(email.text)
 
-		print("Done writing file")
+				# close = driver.find_element(By.ID, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_LinkButton1')
+				# close.click()
+
+				# output.writerow([lastname_text, email.text])
+
+			print("Done writing file")
+
+	# except TimeoutException:
+	# 	print("Cannot get some elements")
 
 
 
@@ -114,7 +149,7 @@ if __name__ == "__main__":
 	login(driver)
 	go_roster(driver)
 	get_list(driver)
-	view_all(driver)
+	# view_all(driver)
 	save_to_csv(driver)
 	# time.sleep(25)
 	# driver.quit()
