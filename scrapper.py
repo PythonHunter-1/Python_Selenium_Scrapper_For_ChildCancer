@@ -1,14 +1,20 @@
 import json
 import time
+import csv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, ElementNotVisibleException
 
+# class csvItem(scrapy.Item):
+# 	last_name = scrapy.Field()
+# 	email = scrapy.Field()
+
 def init_driver():
-	path_to_chromedriver = './chromedriver'
-	driver = webdriver.Chrome(executable_path = path_to_chromedriver)
+	# path_to_chromedriver = './chromedriver'
+	# driver = webdriver.Chrome(executable_path = path_to_chromedriver)
+	driver = webdriver.Firefox()
 	driver.wait = WebDriverWait(driver, 30)
 	return driver
 
@@ -58,11 +64,52 @@ def get_list(driver):
 
 def view_all(driver):
 	try:
-		xpath = "//a[contains(@id, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_rgSummary_lbtnViewSize') and contains(text(), 'View All')]"
+		# xpath = "//a[contains(@id, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_rgSummary_lbtnViewSize') and contains(text(), 'View All')]"
+
+		xpath = "//a[contains(@id, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_rgSummary_lbtnViewSize')]"
 		view_all = driver.wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
 		view_all.click()
 	except TimeoutException:
 		print("View All button not found")
+
+# def scrap(driver):
+# 	hxs = HtmlXPathSelector(text=driver.page_source)
+# 	data = hxs.xpath('//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00"]/tbody/tr')
+
+# 	for datum in data:
+# 		item = csvItem()
+# 		item["last_name"] = datum.xpath('./td[0]/a/text()').extract()
+# 		item["email"] = datum.xpath('./td[1]/text()').extract()
+
+# 		items.append(item)
+
+def save_to_csv(driver):
+	try:
+		driver.wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(@id, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_rgSummary_lbtnViewSize') and contains(text(), 'View Less')]")))
+	except TimeoutException:
+		print("Cannot find View Less")
+	driver.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, "td")))
+	with open("results.csv", "w") as f:
+		output = csv.writer(f)
+		output.writerow(["last name", "email"])
+
+		tbody = driver.find_element(By.XPATH, '//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00"]/tbody')
+		rows = tbody.find_elements(By.TAG_NAME, "tr")
+		print("row length:", len(rows))
+
+
+		# for row in rows:
+		# 	lastname = datum.xpath('./td[0]/a/text()').extract()
+		# 	email = datum.xpath('./td[1]/text()').extract()
+
+		# 	print(lastname)
+		# 	print(email)
+
+		# 	output.writerow([lastname, email])
+
+		print("Done writing file")
+
+
 
 
 
@@ -72,5 +119,6 @@ if __name__ == "__main__":
 	go_roster(driver)
 	get_list(driver)
 	view_all(driver)
+	save_to_csv(driver)
 	# time.sleep(25)
 	# driver.quit()
