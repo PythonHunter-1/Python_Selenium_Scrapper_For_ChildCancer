@@ -8,7 +8,7 @@ from selenium.common.exceptions import TimeoutException, ElementNotVisibleExcept
 
 def init_driver():
 	driver = webdriver.Firefox()
-	driver.wait = WebDriverWait(driver, 15)
+	driver.wait = WebDriverWait(driver, 30)
 	return driver
 
 def get_config():
@@ -18,7 +18,8 @@ def get_config():
 		cfg = json.load(json_data_file)
 	return cfg
 
-def login(driver, user):
+def login(driver):
+	user = get_config()["user"]
 	driver.get("https://cogmembers.org/login.aspx")
 	try:
 		username_inputbox = driver.wait.until(EC.presence_of_element_located((By.ID, "txtUserName")))
@@ -40,11 +41,34 @@ def go_roster(driver):
 	except TimeoutException:
 		print("Cannot find Quick Links")
 
+def get_list(driver):
+	discipline = get_config()["discipline"]
+	try:
+		# discipline = driver.wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"ctl00_ctl00_ContentPlaceHolder1_cphMainContent_ddlDiscipline\"]/option[contains(text(), {0}]".format(discipline["name"]))))
+
+		# xpath = "//*[@id=\"ctl00_ctl00_ContentPlaceHolder1_cphMainContent_ddlDiscipline\"]/option[text()=\"{0}\"]".format(discipline["name"])
+
+		# print(xpath)
+
+		discipline_name = driver.wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"ctl00_ctl00_ContentPlaceHolder1_cphMainContent_ddlDiscipline\"]/option[text()=\"{0}\"]".format(discipline["name"]))))
+		discipline_name.click()
+
+		# discipline_type = driver.wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"ctl00_ctl00_ContentPlaceHolder1_cphMainContent_ddlDisciplineType\"]/option[contains(text(), {0})]".format(discipline["type"]))))
+
+		# discipline_type = driver.wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"ctl00_ctl00_ContentPlaceHolder1_cphMainContent_ddlDisciplineType\"]/option[contains(text(), \"Primary Discipline Only\")]")))
+		# discipline_type.click()
+
+		# search = driver.wait.until(EC.element_to_be_clickable((By.ID, "ctl00_ctl00_ContentPlaceHolder1_cphMainContent_btnSearchRoster")))
+		# search.click()
+	except TimeoutException:
+		print("Discipline boxes not found")
+
+
 
 if __name__ == "__main__":
-	driver = init_driver()
-	user = get_config()["user"]
-	login(driver, user)
+	driver = init_driver()	
+	login(driver)
 	go_roster(driver)
+	get_list(driver)
 	time.sleep(25)
 	driver.quit()
