@@ -7,7 +7,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, ElementNotVisibleException
 
 def init_driver():
-	driver = webdriver.Firefox()
+	path_to_chromedriver = './chromedriver'
+	driver = webdriver.Chrome(executable_path = path_to_chromedriver)
 	driver.wait = WebDriverWait(driver, 30)
 	return driver
 
@@ -47,8 +48,6 @@ def get_list(driver):
 		discipline_name = driver.wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"ctl00_ctl00_ContentPlaceHolder1_cphMainContent_ddlDiscipline\"]/option[text()=\"{0}\"]".format(discipline["name"]))))
 		discipline_name.click()
 
-		# discipline_type = driver.wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"ctl00_ctl00_ContentPlaceHolder1_cphMainContent_ddlDisciplineType\"]/option[contains(text(), {0})]".format(discipline["type"]))))
-
 		discipline_type = driver.wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"ctl00_ctl00_ContentPlaceHolder1_cphMainContent_ddlDisciplineType\"]/option[text()=\"{0}\"]".format(discipline["type"]))))
 		discipline_type.click()
 
@@ -57,6 +56,14 @@ def get_list(driver):
 	except TimeoutException:
 		print("Discipline boxes not found")
 
+def view_all(driver):
+	try:
+		xpath = "//a[contains(@id, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_rgSummary_lbtnViewSize') and contains(text(), 'View All')]"
+		view_all = driver.wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
+		view_all.click()
+	except TimeoutException:
+		print("View All button not found")
+
 
 
 if __name__ == "__main__":
@@ -64,5 +71,6 @@ if __name__ == "__main__":
 	login(driver)
 	go_roster(driver)
 	get_list(driver)
-	time.sleep(25)
-	driver.quit()
+	view_all(driver)
+	# time.sleep(25)
+	# driver.quit()

@@ -2,5 +2,9 @@
 	"user": {
 		"name": "XXX",
 		"password": "YYY"
-	}	
+	},
+	"discipline": {
+		"name": "ZZZ",
+		"type": "UUUU"
+	}
 }
