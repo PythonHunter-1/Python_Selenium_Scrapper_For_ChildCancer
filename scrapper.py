@@ -86,17 +86,20 @@ def write_to_csv(driver, index, output):
 		lastname.click()
 	except WebDriverException:
 		print('closing exception handling....')
-		time.sleep(5)
 		write_to_csv(driver, index)
+
+	time.sleep(5)
 
 	email = driver.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="divToPrint"]/div[2]/table/tbody/tr/td[2]/table[3]/tbody/tr/td/a')))
 	
 	print(email.text)
-
-	close = driver.find_element(By.ID, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_LinkButton1')
-	close.click()
-
 	output.writerow([lastname_text, email.text])
+
+	close = driver.wait.until(EC.element_to_be_clickable((By.ID, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_LinkButton1')))
+	close.click()
+	time.sleep(5)
+
+	
 
 def save_to_csv(driver):
 	# try:
