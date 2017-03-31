@@ -152,7 +152,7 @@ if __name__ == "__main__":
 	login(driver)
 	go_roster(driver)
 	get_list(driver)
-	# view_all(driver)
+	view_all(driver)
 	save_to_csv(driver)
 	# time.sleep(25)
 	# driver.quit()
