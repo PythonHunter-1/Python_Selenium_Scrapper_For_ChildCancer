@@ -6,5 +6,6 @@
 	"discipline": {
 		"name": "ZZZ",
 		"type": "UUUU"
-	}
+	},
+	"one_step": 5
 }
