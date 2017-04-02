@@ -3,3 +3,4 @@ geckodriver.log
 config.json
 __pycache__
 results.csv
+result_*.csv

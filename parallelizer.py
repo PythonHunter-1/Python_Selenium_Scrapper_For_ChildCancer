@@ -2,7 +2,10 @@ import json
 import time
 import csv
 import re
-from bs4 import BeautifulSoup
+import math
+# from bs4 import BeautifulSoup
+
+from subprocess import Popen
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -71,17 +74,29 @@ def view_all(driver):
 		view_all.click()
 		try:
 			driver.wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(@id, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_rgSummary_lbtnViewSize') and contains(text(), 'View Less')]")))
-			record_count = driver.wait.until(EC.presence_of_element_located((By.ID, "ctl00_ctl00_ContentPlaceHolder1_cphMainContent_rgSummary_lblRecordCount")))
-			
-			matchObj = re.match(r'viewing ((\d)*) records', record_count.text, re.M|re.I)
-			print(matchObj.group(1))
-
 		except TimeoutException:
 			print("Cannot find View Less")
 			view_all(driver)
 
 	except TimeoutException:
 		print("View All button not found")
+
+def run_subprocesses(driver):
+	try:
+		record_count = driver.wait.until(EC.presence_of_element_located((By.ID, "ctl00_ctl00_ContentPlaceHolder1_cphMainContent_rgSummary_lblRecordCount")))
+				
+		matchObj = re.match(r'viewing ((\d)*) records', record_count.text, re.M|re.I)
+		print(matchObj.group(1))
+
+		processes = []
+		one_step = get_config()["one_step"]
+		file_count = math.ceil(int(matchObj.group(1)) / one_step)
+		for index in range(file_count):
+			processes.append(Popen('python scrapper.py {0} {1}'.format(index, one_step), shell=True))
+		for process in processes:
+			process.wait()
+	except TimeoutException:
+		print("Cannot find total record find.")
 
 def write_to_csv(driver, index, output):
 	lastname = driver.wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00__{0}"]/td[1]/a'.format(index))))
@@ -158,7 +173,8 @@ if __name__ == "__main__":
 	login(driver)
 	go_roster(driver)
 	get_list(driver)
-	view_all(driver)
+	# view_all(driver)
+	run_subprocesses(driver)
 	# save_to_csv(driver)
 	# time.sleep(25)
 	# driver.quit()

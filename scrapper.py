@@ -100,9 +100,7 @@ def write_to_csv(driver, index, output):
 
 	close = driver.wait.until(EC.element_to_be_clickable((By.ID, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_LinkButton1')))
 	close.click()
-	time.sleep(10)
-
-	
+	# time.sleep(10)
 
 def save_to_csv(driver):
 	# try:
@@ -131,10 +129,6 @@ def save_to_csv(driver):
 	# except TimeoutException:
 	# 	print("Cannot get some elements")
 
-
-
-
-
 if __name__ == "__main__":
 	driver = init_driver()	
 	login(driver)
@@ -142,5 +136,5 @@ if __name__ == "__main__":
 	get_list(driver)
 	# view_all(driver)
 	save_to_csv(driver)
-	# time.sleep(25)
-	# driver.quit()
+	time.sleep(5)
+	driver.quit()
