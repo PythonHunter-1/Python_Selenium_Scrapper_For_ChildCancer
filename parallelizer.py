@@ -123,7 +123,11 @@ def run_subprocesses(driver):
 		print("Cannot find total record find.")
 
 def result_file_merge(driver):
-	with open('results.csv', 'wb') as outfile:
+	with open('results.csv', 'w') as outfile:
+		output = csv.writer(outfile)
+		output.writerow(["last name", "email"])
+
+	with open('results.csv', 'ab') as outfile:
 		for filename in glob.glob('result_*.csv'):
 			with open(filename, 'rb') as readfile:
 				shutil.copyfileobj(readfile, outfile)

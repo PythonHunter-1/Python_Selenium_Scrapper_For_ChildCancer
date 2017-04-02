@@ -104,7 +104,12 @@ def view_all(driver):
 def write_to_csv(driver, index, output):
 	print('//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00__{0}"]/td[1]/a'.format(index))
 	driver.wait.until(EC.invisibility_of_element_located((By.ID, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_mpeMemberDetails_backgroundElement'))) # modal panel 
-	lastname = driver.wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00__{0}"]/td[1]/a'.format(index))))
+	try: 
+		lastname = driver.wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00__{0}"]/td[1]/a'.format(index))))
+	except WebDriverException:
+		print('cannot find clickable last name, maybe, end of list')
+		driver.quit()
+		exit() 
 	# lastname = row.find_elements(By.TAG_NAME, 'td')[0].find_element(By.TAG_NAME, 'a')
 	lastname_text = lastname.text
 	print(lastname_text)
@@ -133,7 +138,7 @@ def save_to_csv(driver):
 		driver.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, "tr")))
 		with open("result_{0}.csv".format(file_number), "w") as f:
 			output = csv.writer(f)
-			output.writerow(["last name", "email"])
+			# output.writerow(["last name", "email"])
 
 			tbody = driver.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00"]/tbody')))
 			# rows = tbody.find_elements(By.TAG_NAME, "tr")
