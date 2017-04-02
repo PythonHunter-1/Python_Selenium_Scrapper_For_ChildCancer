@@ -3,6 +3,8 @@ import time
 import csv
 import re
 import math
+import shutil
+import glob
 # from bs4 import BeautifulSoup
 
 from subprocess import Popen
@@ -15,6 +17,8 @@ from selenium.common.exceptions import TimeoutException, ElementNotVisibleExcept
 # class csvItem(scrapy.Item):
 # 	last_name = scrapy.Field()
 # 	email = scrapy.Field()
+
+login_counter = 0
 
 def init_driver():
 	path_to_chromedriver = './chromedriver'
@@ -50,8 +54,24 @@ def go_roster(driver):
 	try:
 		quick_links = driver.wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"ctl00_ctl00_MenuLinks1_COGMegamenu\"]/ul/li[1]/a")))
 		driver.get("https://cogmembers.org/apps/roster/membersearch.aspx")
+		exception_occured = False
 	except TimeoutException:
 		print("Cannot find Quick Links")
+		try:
+			driver.wait.until(EC.invisibility_of_element_located((By.ID, "ek_messagelist")))
+		except TimeoutException:
+			print("something is wrong on login")
+			exception_occured = True
+
+	if exception_occured:
+		global login_counter
+		login_counter += 1
+		if login_counter < 3:
+			login(driver)
+			go_roster(driver)
+		else:
+			driver.quit()
+			exit()
 
 def get_list(driver):
 	discipline = get_config()["discipline"]
@@ -72,10 +92,14 @@ def view_all(driver):
 		xpath = "//a[contains(@id, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_rgSummary_lbtnViewSize') and contains(text(), 'View All')]"
 		view_all = driver.wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
 		view_all.click()
+		exception_occured = False
 		try:
 			driver.wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(@id, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_rgSummary_lbtnViewSize') and contains(text(), 'View Less')]")))
 		except TimeoutException:
 			print("Cannot find View Less")
+			exception_occured = True
+
+		if exception_occured:
 			view_all(driver)
 
 	except TimeoutException:
@@ -97,6 +121,12 @@ def run_subprocesses(driver):
 			process.wait()
 	except TimeoutException:
 		print("Cannot find total record find.")
+
+def result_file_merge(driver):
+	with open('results.csv', 'wb') as outfile:
+		for filename in glob.glob('result_*.csv'):
+			with open(filename, 'rb') as readfile:
+				shutil.copyfileobj(readfile, outfile)
 
 def write_to_csv(driver, index, output):
 	lastname = driver.wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00__{0}"]/td[1]/a'.format(index))))
@@ -175,6 +205,7 @@ if __name__ == "__main__":
 	get_list(driver)
 	# view_all(driver)
 	run_subprocesses(driver)
+	result_file_merge(driver)
 	# save_to_csv(driver)
 	# time.sleep(25)
 	# driver.quit()

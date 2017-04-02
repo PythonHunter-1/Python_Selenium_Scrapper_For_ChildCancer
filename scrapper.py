@@ -13,6 +13,8 @@ from selenium.common.exceptions import TimeoutException, ElementNotVisibleExcept
 # 	last_name = scrapy.Field()
 # 	email = scrapy.Field()
 
+login_counter = 0
+
 def init_driver():
 	path_to_chromedriver = './chromedriver'
 	driver = webdriver.Chrome(executable_path = path_to_chromedriver)
@@ -28,8 +30,8 @@ def get_config():
 	return cfg
 
 def login(driver):
-	user = get_config()["user"]
 	driver.get("https://cogmembers.org/login.aspx")
+	user = get_config()["user"]
 	try:
 		username_inputbox = driver.wait.until(EC.presence_of_element_located((By.ID, "txtUserName")))
 		username_inputbox.send_keys(user["name"])
@@ -47,8 +49,24 @@ def go_roster(driver):
 	try:
 		quick_links = driver.wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"ctl00_ctl00_MenuLinks1_COGMegamenu\"]/ul/li[1]/a")))
 		driver.get("https://cogmembers.org/apps/roster/membersearch.aspx")
+		exception_occured = False
 	except TimeoutException:
 		print("Cannot find Quick Links")
+		try:
+			driver.wait.until(EC.invisibility_of_element_located((By.ID, "ek_messagelist")))
+		except TimeoutException:
+			print("something is wrong on login")
+			exception_occured = True
+
+	if exception_occured:
+		global login_counter
+		login_counter += 1
+		if login_counter < 3:
+			login(driver)
+			go_roster(driver)
+		else:
+			driver.quit()
+			exit()
 
 def get_list(driver):
 	discipline = get_config()["discipline"]
@@ -63,16 +81,21 @@ def get_list(driver):
 		search.click()
 	except TimeoutException:
 		print("Discipline boxes not found")
+		# login(driver)
 
 def view_all(driver):
 	try:
 		xpath = "//a[contains(@id, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_rgSummary_lbtnViewSize') and contains(text(), 'View All')]"
 		view_all = driver.wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
 		view_all.click()
+		exception_occured = False
 		try:
 			driver.wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(@id, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_rgSummary_lbtnViewSize') and contains(text(), 'View Less')]")))
 		except TimeoutException:
 			print("Cannot find View Less")
+			exception_occured = True
+
+		if exception_occured:
 			view_all(driver)
 
 	except TimeoutException:
