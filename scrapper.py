@@ -1,6 +1,7 @@
 import json
 import time
 import csv
+import sys
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -16,7 +17,7 @@ def init_driver():
 	path_to_chromedriver = './chromedriver'
 	driver = webdriver.Chrome(executable_path = path_to_chromedriver)
 	# driver = webdriver.Firefox()
-	driver.wait = WebDriverWait(driver, 30)
+	driver.wait = WebDriverWait(driver, 60)
 	return driver
 
 def get_config():
@@ -78,6 +79,8 @@ def view_all(driver):
 		print("View All button not found")
 
 def write_to_csv(driver, index, output):
+	print('//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00__{0}"]/td[1]/a'.format(index))
+	driver.wait.until(EC.invisibility_of_element_located((By.ID, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_mpeMemberDetails_backgroundElement'))) # modal panel 
 	lastname = driver.wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00__{0}"]/td[1]/a'.format(index))))
 	# lastname = row.find_elements(By.TAG_NAME, 'td')[0].find_element(By.TAG_NAME, 'a')
 	lastname_text = lastname.text
@@ -103,40 +106,25 @@ def write_to_csv(driver, index, output):
 
 def save_to_csv(driver):
 	# try:
+		print("args:", sys.argv[1], sys.argv[2])
+		
+		file_number, count = int(sys.argv[1]), int(sys.argv[2])
 		driver.wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, "tr")))
-		with open("results.csv", "w") as f:
+		with open("result_{0}.csv".format(file_number), "w") as f:
 			output = csv.writer(f)
 			output.writerow(["last name", "email"])
 
 			tbody = driver.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00"]/tbody')))
 			# rows = tbody.find_elements(By.TAG_NAME, "tr")
-			time.sleep(10)
+			# time.sleep(10)
 
 			# print(tbody.get_attribute('innerHTML'))
 			# soup = BeautifulSoup(tbody.html)
 			rows = tbody.find_elements(By.TAG_NAME, "tr")
 			print("row length:", len(rows))
 
-
-			for index, row in enumerate(rows):
+			for index in range(file_number * count , file_number * count + count):
 				write_to_csv(driver, index, output)
-				# lastname = driver.wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00__{0}"]/td[1]/a'.format(index))))
-				# # lastname = row.find_elements(By.TAG_NAME, 'td')[0].find_element(By.TAG_NAME, 'a')
-				# lastname_text = lastname.text
-				# print(lastname_text)
-				# try:
-				# 	lastname.click()
-				# except WebDriverException:
-
-
-				# email = driver.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="divToPrint"]/div[2]/table/tbody/tr/td[2]/table[3]/tbody/tr/td/a')))
-				
-				# print(email.text)
-
-				# close = driver.find_element(By.ID, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_LinkButton1')
-				# close.click()
-
-				# output.writerow([lastname_text, email.text])
 
 			print("Done writing file")
 
@@ -152,7 +140,7 @@ if __name__ == "__main__":
 	login(driver)
 	go_roster(driver)
 	get_list(driver)
-	view_all(driver)
+	# view_all(driver)
 	save_to_csv(driver)
 	# time.sleep(25)
 	# driver.quit()
