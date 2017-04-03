@@ -10,6 +10,7 @@ import glob
 from subprocess import Popen
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, ElementNotVisibleException, WebDriverException
@@ -21,10 +22,21 @@ from selenium.common.exceptions import TimeoutException, ElementNotVisibleExcept
 login_counter = 0
 
 def init_driver():
+	# dcap = dict(DesiredCapabilities.PHANTOMJS)
+	# dcap["phantomjs.page.settings.userAgent"] = (
+	#      "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/53 "
+	#      "(KHTML, like Gecko) Chrome/15.0.87")
+
+	# path_to_phantomjs = './phantomjs' # change path as needed
+	# driver = webdriver.PhantomJS(executable_path = path_to_phantomjs)
+	# driver = webdriver.PhantomJS(executable_path = path_to_phantomjs, desired_capabilities = dcap)
+
 	path_to_chromedriver = './chromedriver'
 	driver = webdriver.Chrome(executable_path = path_to_chromedriver)
+
 	# driver = webdriver.Firefox()
-	driver.wait = WebDriverWait(driver, 30)
+
+	driver.wait = WebDriverWait(driver, 60)
 	return driver
 
 def get_config():
@@ -52,9 +64,9 @@ def login(driver):
 def go_roster(driver):
 	# driver.get("https://cogmembers.org/apps/roster/membersearch.aspx")
 	try:
+		exception_occured = False
 		quick_links = driver.wait.until(EC.element_to_be_clickable((By.XPATH, "//*[@id=\"ctl00_ctl00_MenuLinks1_COGMegamenu\"]/ul/li[1]/a")))
 		driver.get("https://cogmembers.org/apps/roster/membersearch.aspx")
-		exception_occured = False
 	except TimeoutException:
 		print("Cannot find Quick Links")
 		try:
@@ -89,10 +101,10 @@ def get_list(driver):
 
 def view_all(driver):
 	try:
+		exception_occured = False
 		xpath = "//a[contains(@id, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_rgSummary_lbtnViewSize') and contains(text(), 'View All')]"
 		view_all = driver.wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
 		view_all.click()
-		exception_occured = False
 		try:
 			driver.wait.until(EC.element_to_be_clickable((By.XPATH, "//a[contains(@id, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_rgSummary_lbtnViewSize') and contains(text(), 'View Less')]")))
 		except TimeoutException:
@@ -128,7 +140,7 @@ def result_file_merge(driver):
 		output.writerow(["last name", "email"])
 
 	with open('results.csv', 'ab') as outfile:
-		for filename in glob.glob('result_*.csv'):
+		for filename in sorted(glob.glob('result_*.csv')):
 			with open(filename, 'rb') as readfile:
 				shutil.copyfileobj(readfile, outfile)
 
@@ -207,7 +219,7 @@ if __name__ == "__main__":
 	login(driver)
 	go_roster(driver)
 	get_list(driver)
-	# view_all(driver)
+	view_all(driver)
 	run_subprocesses(driver)
 	result_file_merge(driver)
 	# save_to_csv(driver)
