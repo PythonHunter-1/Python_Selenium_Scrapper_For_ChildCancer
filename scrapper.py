@@ -32,7 +32,7 @@ def init_driver():
 
 	# driver = webdriver.Firefox()
 
-	driver.wait = WebDriverWait(driver, 300)
+	driver.wait = WebDriverWait(driver, 60)
 	return driver
 
 def get_config():
@@ -116,13 +116,16 @@ def view_all(driver):
 
 def write_to_csv(driver, index, output):
 	print('//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00__{0}"]/td[1]/a'.format(index))
+
+	exception_happened = False
 	try:
 		driver.wait.until(EC.invisibility_of_element_located((By.ID, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_mpeMemberDetails_backgroundElement'))) # modal panel 
 	except WebDriverException:
 		print('error happned, cannot close modal box')
 		driver.quit()
-		Popen('python scrapper.py {0} {1}'.format(sys.argv[1], sys.argv[2]), shell=True)
-		Popen.wait()
+		repeat = Popen('python scrapper.py {0} {1}'.format(sys.argv[1], sys.argv[2]), shell=True)
+		repeat.wait()
+		exit()
 		
 	try: 
 		lastname = driver.wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00__{0}"]/td[1]/a'.format(index))))
@@ -137,7 +140,10 @@ def write_to_csv(driver, index, output):
 		lastname.click()
 	except WebDriverException:
 		print('closing exception handling....')
-		write_to_csv(driver, index)
+		exception_happened = True
+
+	if exception_happened:
+		write_to_csv(driver, index, output)
 
 	# time.sleep(5)
 
@@ -147,9 +153,13 @@ def write_to_csv(driver, index, output):
 		output.writerow([lastname_text, email.text])
 		close = driver.wait.until(EC.element_to_be_clickable((By.ID, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_LinkButton1')))
 		close.click()
-		time.sleep(8)
+		time.sleep(5)
 	except WebDriverException:
-		print("cannot find email address temporarily")	
+		print("cannot find email address temporarily")
+		exception_happened = True
+
+	if exception_happened:
+		write_to_csv(driver, index, output)
 	
 	# time.sleep(10)
 

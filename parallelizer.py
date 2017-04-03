@@ -127,10 +127,11 @@ def run_subprocesses(driver):
 		processes = []
 		one_step = get_config()["one_step"]
 		file_count = math.ceil(int(matchObj.group(1)) / one_step)
-		for index in range(file_count):
-			processes.append(Popen('python scrapper.py {0} {1}'.format(index, one_step), shell=True))
-		for process in processes:
-			process.wait()
+		for total_index in range(int(file_count / 10)):
+			for index in range(total_index * 10, (total_index + 1) * 10):
+				processes.append(Popen('python scrapper.py {0} {1}'.format(index, one_step), shell=True))
+			for process in processes:
+				process.wait()
 	except TimeoutException:
 		print("Cannot find total record find.")
 
