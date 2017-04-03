@@ -127,8 +127,15 @@ def run_subprocesses(driver):
 		processes = []
 		one_step = get_config()["one_step"]
 		file_count = math.ceil(int(matchObj.group(1)) / one_step)
-		for total_index in range(int(file_count / 10)):
-			for index in range(total_index * 10, (total_index + 1) * 10):
+
+		if file_count > 10:
+			for total_index in range(int(file_count / 10)):
+				for index in range(total_index * 10, (total_index + 1) * 10):
+					processes.append(Popen('python scrapper.py {0} {1}'.format(index, one_step), shell=True))
+				for process in processes:
+					process.wait()
+		else:
+			for index in range(file_count):
 				processes.append(Popen('python scrapper.py {0} {1}'.format(index, one_step), shell=True))
 			for process in processes:
 				process.wait()
@@ -155,12 +162,12 @@ def alphanum_key(s):
 def result_file_merge(driver):
 	with open('results.csv', 'w') as outfile:
 		output = csv.writer(outfile)
-		output.writerow(["last name", "email"])
+		output.writerow(["first name", "last name", "email"])
 
 	with open('results.csv', 'ab') as outfile:
 		sorted_filename_list = sorted(glob.glob('result_*.csv'), key=alphanum_key)
 		print(sorted_filename_list)
-		
+
 		for filename in sorted_filename_list:
 			with open(filename, 'rb') as readfile:
 				shutil.copyfileobj(readfile, outfile)
@@ -237,11 +244,11 @@ def save_to_csv(driver):
 
 if __name__ == "__main__":
 	driver = init_driver()	
-	# login(driver)
-	# go_roster(driver)
-	# get_list(driver)
-	# view_all(driver)
-	# run_subprocesses(driver)
+	login(driver)
+	go_roster(driver)
+	get_list(driver)
+	view_all(driver)
+	run_subprocesses(driver)
 	result_file_merge(driver)
 	# save_to_csv(driver)
 	# time.sleep(25)

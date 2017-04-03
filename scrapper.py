@@ -129,13 +129,15 @@ def write_to_csv(driver, index, output):
 		
 	try: 
 		lastname = driver.wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00__{0}"]/td[1]/a'.format(index))))
+		firstname = driver.wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="ctl00_ctl00_ContentPlaceHolder1_cphMainContent_radgrMembers_ctl00__{0}"]/td[2]'.format(index))))
 	except WebDriverException:
 		print('cannot find clickable last name, maybe, end of list')
 		driver.quit()
 		exit() 
 	# lastname = row.find_elements(By.TAG_NAME, 'td')[0].find_element(By.TAG_NAME, 'a')
 	lastname_text = lastname.text
-	print(lastname_text)
+	firstname_text = firstname.text
+	print(lastname_text, firstname_text)
 	try:
 		lastname.click()
 	except WebDriverException:
@@ -150,7 +152,7 @@ def write_to_csv(driver, index, output):
 	try:
 		email = driver.wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="divToPrint"]/div[2]/table/tbody/tr/td[2]/table[3]/tbody/tr/td/a')))
 		print(email.text)
-		output.writerow([lastname_text, email.text])
+		output.writerow([firstname_text, lastname_text, email.text])
 		close = driver.wait.until(EC.element_to_be_clickable((By.ID, 'ctl00_ctl00_ContentPlaceHolder1_cphMainContent_LinkButton1')))
 		close.click()
 		time.sleep(5)
