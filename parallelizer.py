@@ -135,13 +135,33 @@ def run_subprocesses(driver):
 	except TimeoutException:
 		print("Cannot find total record find.")
 
+def tryint(s):
+    try:
+        return int(s)
+    except:
+        return s
+     
+def alphanum_key(s):
+    """ Turn a string into a list of string and number chunks.
+        "z23a" -> ["z", 23, "a"]
+    """
+    return [ tryint(c) for c in re.split('([0-9]+)', s) ]
+
+# def sort_nicely(l):
+#     """ Sort the given list in the way that humans expect.
+#     """
+#     return l.sort(key=alphanum_key)
+
 def result_file_merge(driver):
 	with open('results.csv', 'w') as outfile:
 		output = csv.writer(outfile)
 		output.writerow(["last name", "email"])
 
 	with open('results.csv', 'ab') as outfile:
-		for filename in sorted(glob.glob('result_*.csv')):
+		sorted_filename_list = sorted(glob.glob('result_*.csv'), key=alphanum_key)
+		print(sorted_filename_list)
+		
+		for filename in sorted_filename_list:
 			with open(filename, 'rb') as readfile:
 				shutil.copyfileobj(readfile, outfile)
 
@@ -217,11 +237,11 @@ def save_to_csv(driver):
 
 if __name__ == "__main__":
 	driver = init_driver()	
-	login(driver)
-	go_roster(driver)
-	get_list(driver)
-	view_all(driver)
-	run_subprocesses(driver)
+	# login(driver)
+	# go_roster(driver)
+	# get_list(driver)
+	# view_all(driver)
+	# run_subprocesses(driver)
 	result_file_merge(driver)
 	# save_to_csv(driver)
 	# time.sleep(25)
